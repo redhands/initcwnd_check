@@ -36,6 +36,7 @@ my $dst_port  = 80;
 my $src_seq   = int(rand(2**32) + 1);
 my $dst_seq   = undef ;
 my $dst_seq_last  = undef;
+
 my $mss       = 1460;
 my $pack_mss  = pack('n', $mss);
 
@@ -64,6 +65,8 @@ if($uri_host && !defined $dst_ip) {
 		&usage();
 	}
 }
+
+my @conn = ($src_ip, $src_port, $dst_ip, $dst_port);
 
 my $http_req = "GET $uri_path HTTP/1.1
 Host: $uri_host
@@ -94,7 +97,7 @@ if (Net::Pcap::compile($pcap, \$filter, $filter_str, 0, $mask)) {
 }
 Net::Pcap::pcap_setnonblock($pcap, 1, \$err);
 
-my $syn_pkt = make_packet($src_ip, $src_port, $dst_ip, $dst_port, $src_seq, undef, 1, 0, 0, 0, 65535, undef);
+my $syn_pkt = make_packet($src_seq, undef, 1, 0, 0, 0, 65535, undef);
 
 $syn_pkt->send();
 $src_seq++;
@@ -109,10 +112,10 @@ while (!defined $dst_seq) {
 }
 print STDERR "+ connected from $src_ip:$src_port to $dst_ip:$dst_port\n";
 
-my $ack_pkt = make_packet($src_ip, $src_port, $dst_ip, $dst_port, $src_seq, $dst_seq, 0, 1, 0, 0, 65535, undef);
+my $ack_pkt = make_packet($src_seq, $dst_seq, 0, 1, 0, 0, 65535, undef);
 $ack_pkt->send();
 
-my $data_pkt = make_packet($src_ip, $src_port, $dst_ip, $dst_port, $src_seq, $dst_seq, 0, 1, 1, 0, 65535, $http_req);
+my $data_pkt = make_packet($src_seq, $dst_seq, 0, 1, 1, 0, 65535, $http_req);
 $data_pkt->send();
 
 $now = time;
@@ -126,7 +129,7 @@ sub usage( ) {
 
 sub finish {
 	system("/sbin/iptables -D $iptables");
-	my $rst_pkt = make_packet($src_ip, $src_port, $dst_ip, $dst_port, $src_seq + $http_req_len, undef, 0, 0, 0, 1, 65535, undef);
+	my $rst_pkt = make_packet($src_seq + $http_req_len, undef, 0, 0, 0, 1, 65535, undef);
 	$rst_pkt->send();
 	if($pcap) {
 		Net::Pcap::close ($pcap);
@@ -138,7 +141,9 @@ sub finish {
 }
 
 sub make_packet {
-	my ($src_ip, $src_port, $dst_ip, $dst_port, $src_seq, $dst_seq, $syn, $ack, $psh, $rst, $window_size, $data) = @_;
+	my ($src_seq, $dst_seq, $syn, $ack, $psh, $rst, $window_size, $data) = @_;
+	my ($src_ip, $src_port, $dst_ip, $dst_port) = @conn;
+
 	my $pkt = Net::RawIP->new({
 		ip => {
 			saddr => $src_ip,
@@ -212,4 +217,3 @@ sub receive_synack {
 		$dst_seq = $seq + 1;
 	}   
 }
-

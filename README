@@ -6,11 +6,11 @@ Example:
 
 # ./initcwnd_check.pl eth0 http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js
 + connected from x.x.x.x:1777 to 74.125.71.95:80
-- ajax.googleapis.com (74.125.71.95) - init_cwnd: 10 (14300 byte), init_rwnd: 4 (5720 byte)
+* ajax.googleapis.com (74.125.71.95) - init_cwnd: 10 (14300 byte), init_rwnd: 4 (5720 byte)
 
 # ./initcwnd_check.pl eth0 http://kr.yahoo.com/ 111.67.226.84
 + connected from x.x.x.x:2652 to 111.67.226.84:80
-- kr.yahoo.com (111.67.226.84) - init_cwnd: 2 (2875 byte), init_rwnd: 4 (5840 byte)
+* kr.yahoo.com (111.67.226.84) - init_cwnd: 2 (2875 byte), init_rwnd: 4 (5840 byte)
 
 Requirements:
 
