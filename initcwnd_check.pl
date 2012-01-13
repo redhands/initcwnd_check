@@ -39,6 +39,7 @@ my $dst_seq_last  = undef;
 
 my $mss       = 1460;
 my $pack_mss  = pack('n', $mss);
+my $win_size  = 65535;
 
 my $rwnd_size = 0;
 my $cwnd_size = 0;
@@ -65,8 +66,6 @@ if($uri_host && !defined $dst_ip) {
 		&usage();
 	}
 }
-
-my @conn = ($src_ip, $src_port, $dst_ip, $dst_port);
 
 my $http_req = "GET $uri_path HTTP/1.1
 Host: $uri_host
@@ -112,10 +111,10 @@ while (!defined $dst_seq) {
 }
 print STDERR "+ connected from $src_ip:$src_port to $dst_ip:$dst_port\n";
 
-my $ack_pkt = make_packet($src_seq, $dst_seq, 0, 1, 0, 0, 65535, undef);
+my $ack_pkt = make_packet($src_seq, $dst_seq, 0, 1, 0, 0);
 $ack_pkt->send();
 
-my $data_pkt = make_packet($src_seq, $dst_seq, 0, 1, 1, 0, 65535, $http_req);
+my $data_pkt = make_packet($src_seq, $dst_seq, 0, 1, 1, 0, $http_req);
 $data_pkt->send();
 
 $now = time;
@@ -129,7 +128,7 @@ sub usage( ) {
 
 sub finish {
 	system("/sbin/iptables -D $iptables");
-	my $rst_pkt = make_packet($src_seq + $http_req_len, undef, 0, 0, 0, 1, 65535, undef);
+	my $rst_pkt = make_packet($src_seq + $http_req_len, undef, 0, 0, 0, 1);
 	$rst_pkt->send();
 	if($pcap) {
 		Net::Pcap::close ($pcap);
@@ -141,8 +140,7 @@ sub finish {
 }
 
 sub make_packet {
-	my ($src_seq, $dst_seq, $syn, $ack, $psh, $rst, $window_size, $data) = @_;
-	my ($src_ip, $src_port, $dst_ip, $dst_port) = @conn;
+	my ($src_seq, $dst_seq, $syn, $ack, $psh, $rst, $data) = @_;
 
 	my $pkt = Net::RawIP->new({
 		ip => {
@@ -158,7 +156,7 @@ sub make_packet {
 			ack => $ack,
 			psh => $psh,
 			rst => $rst,
-			window => $window_size,
+			window => $win_size,
 			data => $data
 		}
 	});
@@ -188,8 +186,7 @@ sub receive_packet {
 	my $win = $tcp->{winsize};
 	my $len = length($tcp->{data});
 
-	my @return = ($seq, $ack, $len, $win);
-	return @return;
+	return ($seq, $ack, $len, $win);
 }
 
 sub check_cwnd {
