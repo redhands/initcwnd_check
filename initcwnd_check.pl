@@ -67,11 +67,12 @@ if($uri_host && !defined $dst_ip) {
 	}
 }
 
-my $http_req = "GET $uri_path HTTP/1.1
-Host: $uri_host
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_2) AppleWebKit/534.52.7 (KHTML, like Gecko) Version/5.1.2 Safari/534.52.7
-Accept-Encoding: compress, gzip
-Accept: */*\n\n";
+my $http_req;
+$http_req = "GET $uri_path HTTP/1.1\r\n";
+$http_req .= "Host: $uri_host\r\n";
+$http_req .= "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_2) AppleWebKit/534.52.7 (KHTML, like Gecko) Version/5.1.2 Safari/534.52.7\r\n";
+$http_req .= "Accept-Encoding: compress, gzip\r\n";
+$http_req .= "Accept: */*\r\n\r\n";
 my $http_req_len = length($http_req);
 
 # pcap
