@@ -24,3 +24,9 @@ Requirements:
 	- NetPacket::TCP
 	- Socket
 	- POSIX
+
+You can change the initial congestion window (initcwnd) or initial receive window (initrwnd) by:
+
+		ip route | while read p; do
+			ip route change $p initcwnd 10 initrwnd 10;
+		done

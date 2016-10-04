@@ -97,7 +97,7 @@ if (Net::Pcap::compile($pcap, \$filter, $filter_str, 0, $mask)) {
 }
 Net::Pcap::pcap_setnonblock($pcap, 1, \$err);
 
-my $syn_pkt = make_packet($src_seq, undef, 1, 0, 0, 0, 65535, undef);
+my $syn_pkt = make_packet($src_seq, undef, 1, 0, 0, 0, undef);
 
 $syn_pkt->send();
 $src_seq++;
