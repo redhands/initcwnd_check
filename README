@@ -27,8 +27,6 @@ Requirements:
 
 You can change the initial congestion window (initcwnd) or initial receive window (initrwnd) by:
 
-```shell
-ip route | while read p; do`
-	ip route change $p initcwnd 10 initrwnd 10;`
-done
-```
+>ip route | while read p; do`
+>	ip route change $p initcwnd 10 initrwnd 10;`
+>done
